@@ -19,7 +19,7 @@ def tokenize(text):
     filtered_tokens = list(filter (lambda token: p.match(token) and len(token) >= min_length,tokens))
     return filtered_tokens
 
-def preprocessing(text)
+def preprocessing(text):
     tokens = word_tokenize(text)
     p = re.compile('[a-zA-Z]+');
     tokens = p.match(tokens)
