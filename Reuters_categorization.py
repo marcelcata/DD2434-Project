@@ -19,6 +19,14 @@ def tokenize(text):
     filtered_tokens = list(filter (lambda token: p.match(token) and len(token) >= min_length,tokens))
     return filtered_tokens
 
+def preprocessing(text)
+    tokens = word_tokenize(text)
+    p = re.compile('[a-zA-Z]+');
+    tokens = p.match(tokens)
+    filtered_tokens = [token.lower() for token in tokens if token.lower() not in cachedStopWords]
+    #stem or not?
+    return filtered_tokens
+
 def represent(documents):
     train_docs_id = list(filter(lambda doc: doc.startswith("train"), documents))
     test_docs_id = list(filter(lambda doc: doc.startswith("test"), documents))
