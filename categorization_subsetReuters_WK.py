@@ -63,9 +63,6 @@ def load_dataset(shuffle=True):
         random.shuffle(raw_docs)
       counter = 0
       for raw_doc in raw_docs:
-       # preprocessed_doc = preprocessing(raw_doc)
-        # Get rid of documents that only contain the date!
-        #if len(preprocessed_doc) > 15:
         if len(raw_doc) > 15:
           dataset[split].append((raw_doc, category))
           counter += 1
@@ -165,14 +162,12 @@ def evaluate_crude(test_labels, predictions):
     print("crude")
     print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
 
-
-
-# documents = reuters.fileids()
-# train_docs, train_labels, test_docs, test_labels = represent(documents)
-# model = train_classifier(train_docs, train_labels)
-# predictions = model.predict(test_docs)
-# evaluate(test_labels, predictions)
-
+def evaluate(test_labels, predictions):
+    precision, recall, fscore, support = precision_recall_fscore_support(test_labels, predictions)
+    print("eval")
+    print('precision: {}'.format(precision))
+    print('recall: {}'.format(recall))
+    print('fscore: {}'.format(fscore))
 
 dataset = load_dataset()
 train_docs, train_labels, test_docs, test_labels = represent(dataset)
@@ -183,3 +178,4 @@ evaluate_acq(test_labels, predictions)
 evaluate_earn(test_labels, predictions)
 evaluate_corn(test_labels, predictions)
 evaluate_crude(test_labels, predictions)
+evaluate(test_labels, predictions)
