@@ -8,6 +8,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import f1_score, precision_score, recall_score
+import numpy as np
 
 cachedStopWords = stopwords.words("english")
 
@@ -44,21 +45,6 @@ def tokenize(text):
     filtered_tokens = list(filter(lambda token: p.match(token) and len(token) >= min_length, tokens))
     return filtered_tokens
 
-def preprocessing(document):
-  doc = document.lower()   # Make all lowercase
-  #Re.sub: Return the string obtained by replacing the leftmost non-overlapping occurrences of [^a-z] in string by the replacement ' '.
-  doc = re.sub('[^a-z]', ' ', doc)  # Keep only words containing letters, and replace the others with space
-  doc = re.sub(' +', ' ', doc)   # Get rid of multiple adjacent spaces
-  # doc = re.sub('[^a-z]+')
-  # Split on whitespace
-  word_list = doc.split(' ')
-  # Get rid of all english stopwords
-  word_list = [word for word in word_list if word not in stopwords.words('english')]
-  # Join with space
-  preprocessed_doc = ' '.join(word_list)
- # print('Preprocessed: ', preprocessed_doc)
-  # Strip of whitespace
-  return preprocessed_doc.strip()
 
 def load_dataset(shuffle=True):
   if shuffle:
@@ -88,25 +74,30 @@ def load_dataset(shuffle=True):
           dataset_ids[split].append((raw_id, category))
         if counter >= SIZES[split][category]:
           break
-  return dataset,dataset_ids
+  return dataset
 
-def represent(documents, dataset,dataset_ids):
-    # Training Set(9,603 docs): LEWISSPLIT = "TRAIN"; TOPICS = "YES"
-    # Test Set(3,299 docs): LEWISSPLIT = "TEST"; TOPICS = "YES"
-    # Unused(8,676 docs):   LEWISSPLIT = "NOT-USED"; TOPICS = "YES"  or TOPICS = "NO" or TOPICS = "BYPASS"
-
-
+def represent(dataset):
     # train_docs_id = list(filter(lambda doc: doc.startswith("train"), documents))
     # test_docs_id = list(filter(lambda doc: doc.startswith("test"), documents))
     #
     # train_docs = [reuters.raw(doc_id) for doc_id in train_docs_id]
     # test_docs = [reuters.raw(doc_id) for doc_id in test_docs_id]
+    labels = {
+        'acq': 0,
+        'corn': 1,
+        'crude': 2,
+        'earn': 3
+    }
 
-    train_docs_id = map(lambda tuple: tuple[0], dataset_ids[TRAIN])
-    test_docs_id = map(lambda tuple: tuple[0], dataset_ids[TEST])
-    train_docs = map(lambda tuple: tuple[0], dataset[TRAIN])
-    test_docs =  map(lambda tuple: tuple[0], dataset[TEST])
+    # train_docs_id = map(lambda tuple: tuple[1], dataset[TRAIN])
+    # test_docs_id = map(lambda tuple: tuple[1], dataset[TEST])
+    # train_docs = map(lambda tuple: tuple[0], dataset[TRAIN])
+    # test_docs =  map(lambda tuple: tuple[0], dataset[TEST])
 
+    train_docs = [tuple[0] for tuple in dataset[TRAIN]]
+    train_labels = np.array([labels[tuple[1]] for tuple in dataset[TRAIN]])
+    test_docs = [tuple[0] for tuple in dataset[TEST]]
+    test_labels = np.array([labels[tuple[1]] for tuple in dataset[TEST]])
 
     # Tokenisation
     vectorizer = TfidfVectorizer(tokenizer=tokenize)
@@ -116,11 +107,9 @@ def represent(documents, dataset,dataset_ids):
     vectorised_test_documents = vectorizer.transform(test_docs)
 
     # Transform multilabel labels
-    mlb = MultiLabelBinarizer()
-    train_labels = mlb.fit_transform([reuters.categories(doc_id) for doc_id in train_docs_id])
-    test_labels = mlb.transform([reuters.categories(doc_id) for doc_id in test_docs_id])
-
-
+    # mlb = MultiLabelBinarizer()
+    # train_labels = mlb.fit_transform([reuters.categories(doc_id) for doc_id in train_docs_id])
+    # test_labels = mlb.transform([reuters.categories(doc_id) for doc_id in test_docs_id])
     return (vectorised_train_documents, train_labels, vectorised_test_documents, test_labels)
 
 
@@ -150,9 +139,9 @@ def evaluate(test_labels, predictions):
 # predictions = model.predict(test_docs)
 # evaluate(test_labels, predictions)
 
-documents = reuters.fileids()
-dataset,dataset_ids = load_dataset()
-train_docs, train_labels, test_docs, test_labels = represent(documents,dataset,dataset_ids)
+
+dataset = load_dataset()
+train_docs, train_labels, test_docs, test_labels = represent(dataset)
 model = train_classifier(train_docs, train_labels)
 predictions = model.predict(test_docs)
 evaluate(test_labels, predictions)
