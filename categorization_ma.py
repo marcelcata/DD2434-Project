@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.metrics import f1_score, precision_score, recall_score,precision_recall_fscore_support
 import numpy as np
 
 cachedStopWords = stopwords.words("english")
@@ -132,6 +132,40 @@ def evaluate(test_labels, predictions):
     print("Macro-average quality numbers")
     print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
 
+def evaluate_acq(test_labels, predictions):
+
+    labels = [0]
+    precision = precision_score(test_labels, predictions,labels,average='macro')
+    recall = recall_score(test_labels, predictions,labels, average='macro')
+    f1 = f1_score(test_labels, predictions,labels,average='macro')
+    print("acq")
+    print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
+
+def evaluate_earn(test_labels, predictions):
+    labels = [3]
+    precision = precision_score(test_labels, predictions,labels,average='macro')
+    recall = recall_score(test_labels, predictions,labels, average='macro')
+    f1 = f1_score(test_labels, predictions,labels,average='macro')
+    print("earn")
+    print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
+
+def evaluate_corn(test_labels, predictions):
+    labels = [1]
+    precision = precision_score(test_labels, predictions,labels,average='macro')
+    recall = recall_score(test_labels, predictions,labels, average='macro')
+    f1 = f1_score(test_labels, predictions,labels,average='macro')
+    print("corn")
+    print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
+
+def evaluate_crude(test_labels, predictions):
+    labels = [2]
+    precision = precision_score(test_labels, predictions,labels,average='macro')
+    recall = recall_score(test_labels, predictions,labels, average='macro')
+    f1 = f1_score(test_labels, predictions,labels,average='macro')
+    print("crude")
+    print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
+
+
 
 # documents = reuters.fileids()
 # train_docs, train_labels, test_docs, test_labels = represent(documents)
@@ -145,3 +179,7 @@ train_docs, train_labels, test_docs, test_labels = represent(dataset)
 model = train_classifier(train_docs, train_labels)
 predictions = model.predict(test_docs)
 evaluate(test_labels, predictions)
+evaluate_acq(test_labels, predictions)
+evaluate_earn(test_labels, predictions)
+evaluate_corn(test_labels, predictions)
+evaluate_crude(test_labels, predictions)
