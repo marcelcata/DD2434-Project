@@ -47,7 +47,7 @@ def generate_dataset(shuffle=True):
                     counter += 1
                 if counter >= SIZES[split][category]:
                     break
-    return
+    return dataset
 
 dataset = generate_dataset()
 pickle.dump(dataset, open(filename, 'wb'))
