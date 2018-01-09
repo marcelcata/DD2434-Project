@@ -5,7 +5,7 @@ import re
 import random
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.svm import LinearSVC
+from sklearn.svm import LinearSVC, SVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import f1_score, precision_score, recall_score,precision_recall_fscore_support
 import numpy as np
@@ -64,6 +64,38 @@ def initialize():
     test_labels = np.array([labels[tuple[1]] for tuple in dataset[TEST]])
     return train_docs, train_labels, test_docs, test_labels
 
+def gram_matrices(kernel_type, train_docs, train_labels, test_docs, test_labels, n):
+
+    n_train = len(train_docs)
+    n_test = len(test_docs)
+    train_matrix = np.zeros((n_train,n_train))
+    test_matrix = np.zeros((n_test,n_train))
+
+    print(n_train)
+    print(n_test)
+
+    for i in range(n_train):
+        print(i)
+        for j in range(n_train):
+            if kernel_type == 'wk':
+                train_matrix[i][j] = kernel_wk.compute(train_docs[i],train_docs[j])
+            elif kernel_type == 'ngram':
+                train_matrix[i][j] = kernel_ngk.compute(train_docs[i],train_docs[j], n)
+            elif kernel_type == 'ssk':
+                train_matrix[i][j] = kernel_ssk.compute(train_docs[i],train_docs[j])
+
+    for i in range(n_test):
+        print(i)
+        for j in range(n_train):
+            if kernel_type == 'wk':
+                test_matrix[i][j] = kernel_wk.compute(test_docs[i],train_docs[j])
+            elif kernel_type == 'ngram':
+                test_matrix[i][j] = kernel_ngk.compute(test_docs[i],train_docs[j], n)
+            elif kernel_type == 'ssk':
+                test_matrix[i][j] = kernel_ssk.compute(test_docs[i],train_docs[j])
+
+    return train_matrix, train_labels, test_matrix, test_labels
+
 
 ########################### USING THE KERNELS
 def extract_features(kernel_type, train_docs, train_labels, test_docs, test_labels):
@@ -90,7 +122,8 @@ def extract_features(kernel_type, train_docs, train_labels, test_docs, test_labe
 ############################ CLASSIFIER
 def train_classifier(train_docs, train_labels):
    # kernel_wk.compute(train_docs, test_docs)
-    classifier = OneVsRestClassifier(LinearSVC(random_state=42))
+    #classifier = OneVsRestClassifier(LinearSVC(random_state=42))
+    classifier = SVC(kernel='precomputed')
     classifier.fit(train_docs, train_labels) #instead of train_docs -> kernel_train
     #classifier.fit(kernel_train, train_labels) #instead of train_docs -> kernel_train
     return classifier
@@ -156,8 +189,12 @@ def evaluate(test_labels, predictions):
 train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize()
 # Get the feature according to the chosen kernel
 kernel_type = 'wk'
-train_docs, train_labels, test_docs, test_labels = extract_features(kernel_type,
-                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw)
+#train_docs, train_labels, test_docs, test_labels = extract_features(kernel_type,
+#                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw)
+
+n = 2
+train_docs, train_labels, test_docs, test_labels = gram_matrices(kernel_type,
+                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, n)
 
 #kernel_train = kernel_wk.compute(train_docs,train_docs)
 # Train the model
