@@ -13,4 +13,4 @@ def compute(s,t):
                                         sublinear_tf=True)
     docs = tfidfVectorizer.fit_transform([s,t])
     docs = docs.toarray()
-    return np.dot(docs[0], docs[1])
+    return np.dot(docs[0], docs[1])/np.sqrt(np.dot(docs[0], docs[0])*np.dot(docs[1], docs[1]))
