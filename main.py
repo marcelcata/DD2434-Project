@@ -13,6 +13,7 @@ import kernel_wk
 import kernel_ngk
 import kernel_ssk
 import _pickle as pickle
+import string
 
 
 cachedStopWords = stopwords.words("english")
@@ -66,6 +67,12 @@ def initialize():
     test_docs = [tuple[0] for tuple in dataset[TEST]]
     test_labels = np.array([labels[tuple[1]] for tuple in dataset[TEST]])
     return train_docs, train_labels, test_docs, test_labels
+
+def preprocessing(text):
+    text = ' '.join([word for word in text.split() if word not in cachedStopWords])
+    for c in string.punctuation:
+        text = text.replace(c,"")
+    return text.lower()
 
 def gram_matrices(kernel_type, train_docs, train_labels, test_docs, test_labels, k, m_lambda):
 
@@ -193,11 +200,14 @@ def evaluate(test_labels, predictions):
 # Prepare Dataset
 train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize()
 # Get the feature according to the chosen kernel
-kernel_type = 'ngram'
-k = 5
+kernel_type = 'wk'
+k = 2
 m_lambda = 0.5
 #train_docs, train_labels, test_docs, test_labels = extract_features(kernel_type,
 #                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw)
+
+train_docs_raw = [preprocessing(doc) for doc in train_docs_raw]
+test_docs_raw = [preprocessing(doc) for doc in test_docs_raw]
 
 if LOAD_MATRICES:
     if kernel_type == 'wk':
@@ -211,13 +221,13 @@ if LOAD_MATRICES:
 else:
     train_docs, train_labels, test_docs, test_labels = gram_matrices(kernel_type,
                                             train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, k, m_lambda)
-    if SAVE_MATRICES:
-        if kernel_type == 'wk':
-            np.save('Gmatrix_train_'+kernel_type,train_docs)
-            np.save('Gmatrix_test_'+kernel_type,test_docs)
-        else:
-            np.save('Gmatrix_train_'+kernel_type+str(k),train_docs)
-            np.save('Gmatrix_test_'+kernel_type+str(k),test_docs)
+if SAVE_MATRICES:
+    if kernel_type == 'wk':
+        np.save('Gmatrix_train_'+kernel_type,train_docs)
+        np.save('Gmatrix_test_'+kernel_type,test_docs)
+    else:
+        np.save('Gmatrix_train_'+kernel_type+str(k),train_docs)
+        np.save('Gmatrix_test_'+kernel_type+str(k),test_docs)
 
 #kernel_train = kernel_wk.compute(train_docs,train_docs)
 # Train the model
