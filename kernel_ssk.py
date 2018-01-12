@@ -7,21 +7,21 @@
 #using namespace shogun;
 
 #Compute kernel for strings s and t
-def compute(s,t):
+def compute(s,t,k,m_lambda):
 	len_s = len(s)
 	len_t = len(t)
-	max_len= 5 #max lenght
-	m_lambda = 0.5 #weights
+	max_len= k #max lenght
+	#m_lambda = 0.5 #weights
 	Kp=[] # kp = k'
 	Kpp=[] # Kpp = k''
-	
+
 
 	# allocating memory for computing K' (Kp)  ->> ??
 	# initialize for 0 subsequence length for both the strings
 	for i in range(len_s):
 		for j in range(len_t):
 			Kp[0][i][j]= 1.0
-			
+
 	# computing of the K' (Kp) function using equations
 	# shown in Lodhi et. al. See the class documentation for
 	# definitions of Kp and Kpp

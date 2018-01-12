@@ -1,20 +1,12 @@
 import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from nltk import word_tokenize
-from nltk.stem import PorterStemmer
 
-class Stemmer(object):
-    def __init__(self):
-        self.ps = PorterStemmer()
-    def __call__(self, doc):
-        return [self.ps.stem(t) for t in word_tokenize(doc)]
+# Bag-of-words kernel
 
 #Compute kernel for documents s and t
 def compute(s,t):
     tfidfVectorizer = TfidfVectorizer(analyzer = "word",
-                                        tokenizer = Stemmer(),
+                                        tokenizer = None,
                                         preprocessor = None,
                                         stop_words = "english",
                                         smooth_idf=False,

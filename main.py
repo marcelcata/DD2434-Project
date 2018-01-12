@@ -25,8 +25,8 @@ TEST = 'test'
 CATEGORIES = [ACQ, CORN, CRUDE, EARN]
 SPLITS = [TRAIN, TEST]
 
-LOAD_MATRICES = 1
-SAVE_MATRICES = 0
+LOAD_MATRICES = 0
+SAVE_MATRICES = 1
 
 SIZES = {
     TRAIN: {
@@ -67,7 +67,7 @@ def initialize():
     test_labels = np.array([labels[tuple[1]] for tuple in dataset[TEST]])
     return train_docs, train_labels, test_docs, test_labels
 
-def gram_matrices(kernel_type, train_docs, train_labels, test_docs, test_labels, n):
+def gram_matrices(kernel_type, train_docs, train_labels, test_docs, test_labels, k, m_lambda):
 
     n_train = len(train_docs)
     n_test = len(test_docs)
@@ -83,9 +83,9 @@ def gram_matrices(kernel_type, train_docs, train_labels, test_docs, test_labels,
             if kernel_type == 'wk':
                 train_matrix[i][j] = kernel_wk.compute(train_docs[i],train_docs[j])
             elif kernel_type == 'ngram':
-                train_matrix[i][j] = kernel_ngk.compute(train_docs[i],train_docs[j], n)
+                train_matrix[i][j] = kernel_ngk.compute(train_docs[i],train_docs[j], k)
             elif kernel_type == 'ssk':
-                train_matrix[i][j] = kernel_ssk.compute(train_docs[i],train_docs[j])
+                train_matrix[i][j] = kernel_ssk.compute(train_docs[i],train_docs[j], k, m_lambda)
 
     train_matrix = train_matrix + train_matrix.T + np.eye(n_train)
 
@@ -95,9 +95,9 @@ def gram_matrices(kernel_type, train_docs, train_labels, test_docs, test_labels,
             if kernel_type == 'wk':
                 test_matrix[i][j] = kernel_wk.compute(test_docs[i],train_docs[j])
             elif kernel_type == 'ngram':
-                test_matrix[i][j] = kernel_ngk.compute(test_docs[i],train_docs[j], n)
+                test_matrix[i][j] = kernel_ngk.compute(test_docs[i],train_docs[j], k)
             elif kernel_type == 'ssk':
-                test_matrix[i][j] = kernel_ssk.compute(test_docs[i],train_docs[j])
+                test_matrix[i][j] = kernel_ssk.compute(test_docs[i],train_docs[j], k, m_lambda)
 
     return train_matrix, train_labels, test_matrix, test_labels
 
@@ -193,22 +193,31 @@ def evaluate(test_labels, predictions):
 # Prepare Dataset
 train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize()
 # Get the feature according to the chosen kernel
-kernel_type = 'wk'
-n = 2
+kernel_type = 'ngram'
+k = 5
+m_lambda = 0.5
 #train_docs, train_labels, test_docs, test_labels = extract_features(kernel_type,
 #                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw)
 
 if LOAD_MATRICES:
-    train_docs = np.load('Gmatrix_train_'+kernel_type+'.npy')
+    if kernel_type == 'wk':
+        train_docs = np.load('Gmatrix_train_'+kernel_type+'.npy')
+        test_docs = np.load('Gmatrix_test_'+kernel_type+'.npy')
+    else:
+        train_docs = np.load('Gmatrix_train_'+kernel_type+str(k)+'.npy')
+        test_docs = np.load('Gmatrix_test_'+kernel_type+str(k)+'.npy')
     train_labels = train_labels_raw
-    test_docs = np.load('Gmatrix_test_'+kernel_type+'.npy')
     test_labels = test_labels_raw
 else:
     train_docs, train_labels, test_docs, test_labels = gram_matrices(kernel_type,
-                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, n)
+                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, k, m_lambda)
     if SAVE_MATRICES:
-        np.save('Gmatrix_train_'+kernel_type,train_docs)
-        np.save('Gmatrix_test_'+kernel_type,test_docs)
+        if kernel_type == 'wk':
+            np.save('Gmatrix_train_'+kernel_type,train_docs)
+            np.save('Gmatrix_test_'+kernel_type,test_docs)
+        else:
+            np.save('Gmatrix_train_'+kernel_type+str(k),train_docs)
+            np.save('Gmatrix_test_'+kernel_type+str(k),test_docs)
 
 #kernel_train = kernel_wk.compute(train_docs,train_docs)
 # Train the model
