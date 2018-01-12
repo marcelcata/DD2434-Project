@@ -24,6 +24,8 @@ TRAIN = 'train'
 TEST = 'test'
 CATEGORIES = [ACQ, CORN, CRUDE, EARN]
 SPLITS = [TRAIN, TEST]
+LOAD_MATRICES = 1
+SAVE_MATRICES = 0
 
 SIZES = {
     TRAIN: {
@@ -189,12 +191,24 @@ def evaluate(test_labels, predictions):
 train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize()
 # Get the feature according to the chosen kernel
 kernel_type = 'wk'
+n = 2
 #train_docs, train_labels, test_docs, test_labels = extract_features(kernel_type,
 #                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw)
 
-n = 2
-train_docs, train_labels, test_docs, test_labels = gram_matrices(kernel_type,
+if LOAD_MATRICES:
+    train_docs = np.load('Gmatrix_train_'+kernel_type+'.npy')
+    train_labels = train_labels_raw
+    test_docs = np.load('Gmatrix_test_'+kernel_type+'.npy')
+    test_labels = test_labels_raw
+else:
+    train_docs, train_labels, test_docs, test_labels = gram_matrices(kernel_type,
                                             train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, n)
+    if SAVE_MATRICES:
+        np.save('Gmatrix_train_'+kernel_type,train_docs)
+        np.save('Gmatrix_test_'+kernel_type,test_docs)
+
+
+
 
 #kernel_train = kernel_wk.compute(train_docs,train_docs)
 # Train the model
