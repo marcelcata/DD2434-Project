@@ -24,6 +24,7 @@ TRAIN = 'train'
 TEST = 'test'
 CATEGORIES = [ACQ, CORN, CRUDE, EARN]
 SPLITS = [TRAIN, TEST]
+
 LOAD_MATRICES = 1
 SAVE_MATRICES = 0
 
@@ -78,13 +79,15 @@ def gram_matrices(kernel_type, train_docs, train_labels, test_docs, test_labels,
 
     for i in range(n_train):
         print(i)
-        for j in range(n_train):
+        for j in range(i+1,n_train):
             if kernel_type == 'wk':
                 train_matrix[i][j] = kernel_wk.compute(train_docs[i],train_docs[j])
             elif kernel_type == 'ngram':
                 train_matrix[i][j] = kernel_ngk.compute(train_docs[i],train_docs[j], n)
             elif kernel_type == 'ssk':
                 train_matrix[i][j] = kernel_ssk.compute(train_docs[i],train_docs[j])
+
+    train_matrix = train_matrix + train_matrix.T + np.eye(n_train)
 
     for i in range(n_test):
         print(i)
@@ -206,9 +209,6 @@ else:
     if SAVE_MATRICES:
         np.save('Gmatrix_train_'+kernel_type,train_docs)
         np.save('Gmatrix_test_'+kernel_type,test_docs)
-
-
-
 
 #kernel_train = kernel_wk.compute(train_docs,train_docs)
 # Train the model
