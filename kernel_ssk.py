@@ -1,5 +1,7 @@
 #Efficient Computation of SSK
 
+import numpy as np
+
 #include <shogun/kernel/string/SubsequenceStringKernel.h>
 #include <shogun/kernel/normalizer/SqrtDiagKernelNormalizer.h>
 #include <shogun/features/StringFeatures.h>
@@ -12,7 +14,7 @@ def compute(s,t,k,m_lambda):
 	len_t = len(t)
 	max_len= k #max lenght
 	#m_lambda = 0.5 #weights
-	Kp=[] # kp = k'
+	Kp=np.zeros([max_len+1,len_s,len_t]) # kp = k'
 	Kpp=[] # Kpp = k''
 
 
