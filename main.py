@@ -157,7 +157,6 @@ def evaluate_macro_micro(test_labels, predictions):
     print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
 
 def evaluate_acq(test_labels, predictions):
-
     labels = [0]
     precision = precision_score(test_labels, predictions,labels,average='macro')
     recall = recall_score(test_labels, predictions,labels, average='macro')
@@ -200,7 +199,7 @@ def evaluate(test_labels, predictions):
 # Prepare Dataset
 train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize()
 # Get the feature according to the chosen kernel
-kernel_type = 'wk'
+kernel_type = 'ssk'
 k = 2
 m_lambda = 0.5
 #train_docs, train_labels, test_docs, test_labels = extract_features(kernel_type,
@@ -211,31 +210,34 @@ test_docs_raw = [preprocessing(doc) for doc in test_docs_raw]
 
 if LOAD_MATRICES:
     if kernel_type == 'wk':
-        train_docs = np.load('Gmatrix_train_'+kernel_type+'.npy')
+        train_matrix = np.load('Gmatrix_train_'+kernel_type+'.npy')
         test_docs = np.load('Gmatrix_test_'+kernel_type+'.npy')
-    else:
-        train_docs = np.load('Gmatrix_train_'+kernel_type+str(k)+'.npy')
-        test_docs = np.load('Gmatrix_test_'+kernel_type+str(k)+'.npy')
+    if kernel_type == 'ngk':
+        train_matrix = np.load('Gmatrix_train_' + kernel_type + '.npy')
+        test_docs = np.load('Gmatrix_test_' + kernel_type + '.npy')
+    if kernel_type == 'ssk':
+        train_matrix = np.load('Gmatrix_train_'+kernel_type+str(k)+str(m_lambda)+'.npy')
+        test_docs = np.load('Gmatrix_test_'+kernel_type+str(k)+str(m_lambda)+'.npy')
     train_labels = train_labels_raw
     test_labels = test_labels_raw
 else:
-    train_docs, train_labels, test_docs, test_labels = gram_matrices(kernel_type,
+    train_matrix, train_labels, test_matrix, test_labels = gram_matrices(kernel_type,
                                             train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, k, m_lambda)
 if SAVE_MATRICES:
     if kernel_type == 'wk':
-        np.save('Gmatrix_train_'+kernel_type,train_docs)
-        np.save('Gmatrix_test_'+kernel_type,test_docs)
-    else:
-        np.save('Gmatrix_train_'+kernel_type+str(k),train_docs)
-        np.save('Gmatrix_test_'+kernel_type+str(k),test_docs)
+        np.save('Gmatrix_train_'+kernel_type,train_matrix)
+        np.save('Gmatrix_test_'+kernel_type,test_matrix)
+    if kernel_type == 'ngk':
+        np.save('Gmatrix_train_'+kernel_type+str(k),train_matrix)
+        np.save('Gmatrix_test_'+kernel_type+str(k),test_matrix)
+    if kernel_type == 'ssk':
+        np.save('Gmatrix_train_' + kernel_type + str(k)+str(m_lambda), train_matrix)
+        np.save('Gmatrix_test_' + kernel_type + str(k)+str(m_lambda), test_matrix)
 
-#kernel_train = kernel_wk.compute(train_docs,train_docs)
 # Train the model
-model = train_classifier(train_docs, train_labels) #instead of train_docs -> kernel_train
-
-#kernel_test = kernel_wk.compute(train_docs,test_docs)
+model = train_classifier(train_matrix, train_labels)
 # Predict
-predictions = model.predict(test_docs)  #instead of test_docs -> kernel_test
+predictions = model.predict(test_matrix)
 #predictions = model.predict(kernel_test)
 # Evaluate predictions
 evaluate(test_labels, predictions)
