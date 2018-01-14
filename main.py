@@ -37,8 +37,7 @@ def load_dataset(filename):
     return dataset
 
 def initialize(i):
-   # filename = 'dataset/subset_470_' + str(i) + '.pkl'
-    filename = 'dataset/subset_470.pkl'
+    filename = 'dataset/subset_470_' + str(i) + '.pkl'
     filename2 = 'dataset/subset_ssk.pkl'
     dataset = load_dataset(filename)
     labels = {
