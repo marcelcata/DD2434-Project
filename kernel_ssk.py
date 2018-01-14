@@ -6,9 +6,9 @@ import math
 #Compute kernel for strings s and t
 def compute(s,t,k,m_lambda):
     Kst= computeK(s,t,k,m_lambda)
-    Kss= computeK(s,s,k,m_lambda)
-    Ktt= computeK(t,t,k,m_lambda)
-    denominator = math.sqrt(Kss*Ktt) + 10e-20
+    #Kss= computeK(s,s,k,m_lambda)
+    #Ktt= computeK(t,t,k,m_lambda)
+    denominator = 1 #math.sqrt(Kss*Ktt) + 10e-20
     return Kst / denominator
 
 
