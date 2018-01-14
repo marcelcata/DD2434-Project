@@ -37,7 +37,8 @@ def load_dataset(filename):
     return dataset
 
 def initialize(i):
-    filename = 'dataset/subset_470_' + str(i) + '.pkl'
+   # filename = 'dataset/subset_470_' + str(i) + '.pkl'
+    filename = 'dataset/subset_470.pkl'
     filename2 = 'dataset/subset_ssk.pkl'
     dataset = load_dataset(filename)
     labels = {
@@ -112,9 +113,9 @@ for i in range(10):
     # Prepare Dataset
     train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize(i)
     # Get the feature according to the chosen kernel
-    kernel_type = 'wk'
+    kernel_type = 'ngram'
     k = 3
-    n=3
+    n = 5
     m_lambda = 0.05
 
 
@@ -126,9 +127,9 @@ for i in range(10):
         if kernel_type == 'wk':
             train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+'_run'+str(i)+'.npy')
             test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+'_run'+str(i)+'.npy')
-        if kernel_type == 'ngk':
-            train_matrix = np.load('gram_matrices/Gmatrix_train_' + kernel_type +'_run'+str(i)+ '.npy')
-            test_docs = np.load('gram_matrices/Gmatrix_test_' + kernel_type +'_run'+str(i)+ '.npy')
+        if kernel_type == 'ngram':
+            train_matrix = np.load('gram_matrices/Gmatrix_train_' + kernel_type+str(n) +'_run'+str(i)+ '.npy')
+            test_docs = np.load('gram_matrices/Gmatrix_test_' + kernel_type+str(n) +'_run'+str(i)+ '.npy')
         if kernel_type == 'ssk':
             train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+str(k)+'_'+str(m_lambda)+'_run'+str(i)+'.npy')
             test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+str(k)+'_'+str(m_lambda+'_run'+str(i))+'.npy')
@@ -141,7 +142,7 @@ for i in range(10):
         if kernel_type == 'wk':
             np.save('gram_matrices/Gmatrix_train_'+kernel_type+'_run'+str(i),train_matrix)
             np.save('gram_matrices/Gmatrix_test_'+kernel_type+'_run'+str(i),test_matrix)
-        if kernel_type == 'ngk':
+        if kernel_type == 'ngram':
             np.save('gram_matrices/Gmatrix_train_'+kernel_type+str(n)+'_run'+str(i),train_matrix)
             np.save('gram_matrices/Gmatrix_test_'+kernel_type+str(n)+'_run'+str(i),test_matrix)
         if kernel_type == 'ssk':
