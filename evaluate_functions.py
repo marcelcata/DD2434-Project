@@ -48,8 +48,10 @@ def evaluate_crude(test_labels, predictions):
     print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
 
 def evaluate(test_labels, predictions):
-    precision, recall, fscore, support = precision_recall_fscore_support(test_labels, predictions)
+    precision, recall, f1score, support = precision_recall_fscore_support(test_labels, predictions)
     print("eval")
     print('precision: {}'.format(precision))
     print('recall: {}'.format(recall))
-    print('fscore: {}'.format(fscore))
+    print('fscore: {}'.format(f1score))
+
+    return precision, recall, f1score
