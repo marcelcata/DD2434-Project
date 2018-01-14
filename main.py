@@ -39,7 +39,7 @@ def load_dataset(filename):
 def initialize():
     filename = 'dataset/subset_470.pkl'
     filename2 = 'dataset/subset_ssk.pkl'
-    dataset = load_dataset(filename)
+    dataset = load_dataset(filename2)
     labels = {
         'acq': 0,
         'corn': 1,
@@ -102,53 +102,84 @@ def train_classifier(train_matrix, train_labels):
     return classifier
 
 ###################### MAIN #####################
-# Prepare Dataset
-train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize()
-# Get the feature according to the chosen kernel
-kernel_type = 'wk'
-k = 1
-m_lambda = 0.5
+
+
+for i in range(10):
+    # Prepare Dataset
+    train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize()
+    # Get the feature according to the chosen kernel
+    kernel_type = 'ssk'
+    k = 3
+    m_lambda = 0.05
 
 
 
-train_docs_raw = [preprocessing(doc) for doc in train_docs_raw]
-test_docs_raw = [preprocessing(doc) for doc in test_docs_raw]
+    train_docs_raw = [preprocessing(doc) for doc in train_docs_raw]
+    test_docs_raw = [preprocessing(doc) for doc in test_docs_raw]
 
-if LOAD_MATRICES:
-    if kernel_type == 'wk':
-        train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+'.npy')
-        test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+'.npy')
-    if kernel_type == 'ngk':
-        train_matrix = np.load('gram_matrices/Gmatrix_train_' + kernel_type + '.npy')
-        test_docs = np.load('gram_matrices/Gmatrix_test_' + kernel_type + '.npy')
-    if kernel_type == 'ssk':
-        train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+str(k)+str(m_lambda)+'.npy')
-        test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+str(k)+str(m_lambda)+'.npy')
-    train_labels = train_labels_raw
-    test_labels = test_labels_raw
-else:
-    train_matrix, train_labels, test_matrix, test_labels = gram_matrices(kernel_type,
-                                            train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, k, m_lambda)
-if SAVE_MATRICES:
-    if kernel_type == 'wk':
-        np.save('gram_matrices/Gmatrix_train_'+kernel_type,train_matrix)
-        np.save('gram_matrices/Gmatrix_test_'+kernel_type,test_matrix)
-    if kernel_type == 'ngk':
-        np.save('gram_matrices/Gmatrix_train_'+kernel_type+str(k),train_matrix)
-        np.save('gram_matrices/Gmatrix_test_'+kernel_type+str(k),test_matrix)
-    if kernel_type == 'ssk':
-        np.save('gram_matrices/Gmatrix_train_' + kernel_type + str(k)+str(m_lambda), train_matrix)
-        np.save('gram_matrices/Gmatrix_test_' + kernel_type + str(k)+str(m_lambda), test_matrix)
+    if LOAD_MATRICES:
+        if kernel_type == 'wk':
+            train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+'.npy')
+            test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+'.npy')
+        if kernel_type == 'ngk':
+            train_matrix = np.load('gram_matrices/Gmatrix_train_' + kernel_type + '.npy')
+            test_docs = np.load('gram_matrices/Gmatrix_test_' + kernel_type + '.npy')
+        if kernel_type == 'ssk':
+            train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+str(k)+'_'+str(m_lambda)+'.npy')
+            test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+str(k)+'_'+str(m_lambda)+'.npy')
+        train_labels = train_labels_raw
+        test_labels = test_labels_raw
+    else:
+        train_matrix, train_labels, test_matrix, test_labels = gram_matrices(kernel_type,
+                                                train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw, k, m_lambda)
+    if SAVE_MATRICES:
+        if kernel_type == 'wk':
+            np.save('gram_matrices/Gmatrix_train_'+kernel_type,train_matrix)
+            np.save('gram_matrices/Gmatrix_test_'+kernel_type,test_matrix)
+        if kernel_type == 'ngk':
+            np.save('gram_matrices/Gmatrix_train_'+kernel_type+str(k),train_matrix)
+            np.save('gram_matrices/Gmatrix_test_'+kernel_type+str(k),test_matrix)
+        if kernel_type == 'ssk':
+            np.save('gram_matrices/Gmatrix_train_' + kernel_type + str(k)+'_'+str(m_lambda), train_matrix)
+            np.save('gram_matrices/Gmatrix_test_' + kernel_type + str(k)+'_'+str(m_lambda), test_matrix)
 
-# Train the model
-model = train_classifier(train_matrix, train_labels)
-# Predict
-predictions = model.predict(test_matrix)
+    # Train the model
+    model = train_classifier(train_matrix, train_labels)
+    # Predict
+    predictions = model.predict(test_matrix)
 
-# Evaluate predictions
-evaluate_functions.evaluate(test_labels, predictions)
-#
-# evaluate_acq(test_labels, predictions)
-# evaluate_earn(test_labels, predictions)
-# evaluate_corn(test_labels, predictions)
-# evaluate_crude(test_labels, predictions)
+    # Evaluate predictions
+    category = 'acq' #choose category to evaluate
+    if category == 'acq':
+        precision, recall, f1score = evaluate_functions.evaluate_acq(test_labels, predictions)
+    if category == 'corn':
+        precision, recall, f1score = evaluate_functions.evaluate_corn(test_labels, predictions)
+    if category == 'crude':
+        precision, recall, f1score = evaluate_functions.evaluate_crude(test_labels, predictions)
+    if category == 'earn':
+        precision, recall, f1score = evaluate_functions.evaluate_earn(test_labels, predictions)
+
+    # Averaging:
+    if i == 0:
+        precision_array = np.array([precision])
+        recall_array = np.array([recall])
+        f1score_array = np.array([f1score])
+    else:
+        np.append(precision_array,[precision])
+        np.append(recall_array,[recall])
+        np.append(f1score_array,[f1score])
+## Mean ##
+mean_p = np.mean(precision_array,axis=0)
+mean_r = np.mean(recall_array,axis=0)
+mean_f = np.mean(f1score_array,axis=0)
+print("Evaluation of 10 runs")
+print('precision mean: {}'.format(mean_p))
+print('recall mean: {}'.format(mean_r))
+print('fscore mean: {}'.format(mean_f))
+## Standard deviation ##
+std_p = np.std(precision_array,axis=0)
+std_r = np.std(recall_array,axis=0)
+std_f = np.std(f1score_array,axis=0)
+print('precision std: {}'.format(std_p))
+print('recall std: {}'.format(std_r))
+print('fscore std: {}'.format(std_f))
