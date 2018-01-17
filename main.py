@@ -37,7 +37,8 @@ def load_dataset(filename):
     return dataset
 
 def initialize(i):
-    filename = 'dataset/subset_470_' + str(i) + '.pkl'
+    filename = 'dataset/subset_100_' + str(i) + '.pkl'
+    #filename = 'dataset/subset_470_' + str(i) + '.pkl'
     filename2 = 'dataset/subset_ssk.pkl'
     dataset = load_dataset(filename)
     labels = {
@@ -46,11 +47,6 @@ def initialize(i):
         'crude': 2,
         'earn': 3
     }
-
-
-
-
-
     #select documents and labels
     train_docs = [tuple[0] for tuple in dataset[TRAIN]]
     train_labels = np.array([labels[tuple[1]] for tuple in dataset[TRAIN]])
@@ -110,28 +106,26 @@ def train_classifier(train_matrix, train_labels):
 
 for i in range(10):
     # Prepare Dataset
-    train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize(i)
+    train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw = initialize(i+1)
     # Get the feature according to the chosen kernel
-    kernel_type = 'ngram'
+    kernel_type = 'ssk'
     k = 3
     n = 5
-    m_lambda = 0.05
-
-
+    m_lambda = 0.5
 
     train_docs_raw = [preprocessing(doc) for doc in train_docs_raw]
     test_docs_raw = [preprocessing(doc) for doc in test_docs_raw]
 
     if LOAD_MATRICES:
         if kernel_type == 'wk':
-            train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+'_run'+str(i)+'.npy')
-            test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+'_run'+str(i)+'.npy')
+            train_matrix = np.load('gram_matrices/Subset140/Gmatrix_train_'+kernel_type+'_run'+str(i)+'.npy')
+            test_matrix = np.load('gram_matrices/Subset140/Gmatrix_test_'+kernel_type+'_run'+str(i)+'.npy')
         if kernel_type == 'ngram':
-            train_matrix = np.load('gram_matrices/Gmatrix_train_' + kernel_type+str(n) +'_run'+str(i)+ '.npy')
-            test_docs = np.load('gram_matrices/Gmatrix_test_' + kernel_type+str(n) +'_run'+str(i)+ '.npy')
+            train_matrix = np.load('gram_matrices/Subset140/Gmatrix_train_' + kernel_type+str(n) +'_run'+str(i)+ '.npy')
+            test_matrix = np.load('gram_matrices/Subset140/Gmatrix_test_' + kernel_type+str(n) +'_run'+str(i)+ '.npy')
         if kernel_type == 'ssk':
-            train_matrix = np.load('gram_matrices/Gmatrix_train_'+kernel_type+str(k)+'_'+str(m_lambda)+'_run'+str(i)+'.npy')
-            test_docs = np.load('gram_matrices/Gmatrix_test_'+kernel_type+str(k)+'_'+str(m_lambda+'_run'+str(i))+'.npy')
+            train_matrix = np.load('gram_matrices/Subset140/Gmatrix_train_'+kernel_type+str(k)+'_'+str(m_lambda)+'_run'+str(i)+'.npy')
+            test_matrix = np.load('gram_matrices/Subset140/Gmatrix_test_'+kernel_type+str(k)+'_'+str(m_lambda)+'_run'+str(i)+'.npy')
         train_labels = train_labels_raw
         test_labels = test_labels_raw
     else:
@@ -139,14 +133,14 @@ for i in range(10):
                                                 train_docs_raw, train_labels_raw, test_docs_raw, test_labels_raw,n, k, m_lambda)
     if SAVE_MATRICES:
         if kernel_type == 'wk':
-            np.save('gram_matrices/Gmatrix_train_'+kernel_type+'_run'+str(i),train_matrix)
-            np.save('gram_matrices/Gmatrix_test_'+kernel_type+'_run'+str(i),test_matrix)
+            np.save('gram_matrices/Subset140/Gmatrix_train_'+kernel_type+'_run'+str(i),train_matrix)
+            np.save('gram_matrices/Subset140/Gmatrix_test_'+kernel_type+'_run'+str(i),test_matrix)
         if kernel_type == 'ngram':
-            np.save('gram_matrices/Gmatrix_train_'+kernel_type+str(n)+'_run'+str(i),train_matrix)
-            np.save('gram_matrices/Gmatrix_test_'+kernel_type+str(n)+'_run'+str(i),test_matrix)
+            np.save('gram_matrices/Subset140/Gmatrix_train_'+kernel_type+str(n)+'_run'+str(i),train_matrix)
+            np.save('gram_matrices/Subset140/Gmatrix_test_'+kernel_type+str(n)+'_run'+str(i),test_matrix)
         if kernel_type == 'ssk':
-            np.save('gram_matrices/Gmatrix_train_' + kernel_type + str(k)+'_'+str(m_lambda)+'_run'+str(i), train_matrix)
-            np.save('gram_matrices/Gmatrix_test_' + kernel_type + str(k)+'_'+str(m_lambda)+'_run'+str(i), test_matrix)
+            np.save('gram_matrices/Subset140/Gmatrix_train_' + kernel_type + str(k)+'_'+str(m_lambda)+'_run'+str(i), train_matrix)
+            np.save('gram_matrices/Subset140/Gmatrix_test_' + kernel_type + str(k)+'_'+str(m_lambda)+'_run'+str(i), test_matrix)
 
     # Train the model
     model = train_classifier(train_matrix, train_labels)
@@ -154,7 +148,7 @@ for i in range(10):
     predictions = model.predict(test_matrix)
 
     # Evaluate predictions
-    category = 'acq' #choose category to evaluate
+    category = 'corn' #choose category to evaluate
     if category == 'acq':
         precision, recall, f1score = evaluate_functions.evaluate_acq(test_labels, predictions)
     if category == 'corn':
